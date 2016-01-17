@@ -1,22 +1,22 @@
+'''
+Author: Drew Saltarelli 2015
+
+This code prepares two financial time series for cointegration testing
+and returns true/false if the cointegration threshold is above the calculated
+ordinary least square regression residuals.
+'''
+
+
+
 import datetime as dt
 import statsmodels.tsa.stattools as ts
 import statsmodels.api as sm
 import numpy as np
 
 def initialize(context):
-    # Initialize stock universe with the following stocks:
-
-    # Coca-Cola (KO) and Pepsi (PEP)
-    # Wal-Mart (WMT) and Target Corporation (TGT)
-    # Exxon Mobil (XOM) and Chevron Corporation (CVX)
-    # BHP Billiton Limited (BHP) and BHP Billiton plc (BBL)
-    
-    #1. Identification of security (stocks, bonds, futures etc.)  pairs.  Essentially, first create a short list of related securities (we’ll be using equities via Quantopian).
+       #1. Identification of security (stocks, bonds, futures etc.)  pairs.  Essentially, first create a short list of related securities (we’ll be using equities via Quantopian).
    
-    context.stocks = [[sid(4283), sid(5885)],
-                      [sid(8229), sid(21090)],
-                      [sid(8347), sid(23112)]]
-                      #[sid(863), sid(25165)]]
+    context.stocks = getStockData()
 
     # Declare lag value/flag
     context.warmupDays = 60
@@ -31,7 +31,7 @@ def initialize(context):
     # Used later to test for cointegration
     context.cointegrated = []
     
-    # The amount of standard deviations that causes a buy
+    # The amount of standard deviations that causes a buy #FREE PARAMETER TO TUNE
     context.SDDiff = 1
     
     # Mean the stock was last bought at
@@ -129,4 +129,4 @@ def handle_data(context, data):
 def test_coint(pair):
     result = sm.OLS(pair[1], pair[0]).fit()   #Ordinary Least Squares
     dfResult =  ts.adfuller(result.resid)  #Dickey-Fuller Cointegration test( check wikipedia)
-    return dfResult[0] >= dfResult[4]['10%'] #at least 10% cointegrated
+    return dfResult[0] >= dfResult[4]['10%'] #TRUE if at least 10% cointegrated
